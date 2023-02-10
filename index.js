@@ -34,7 +34,7 @@ function operation() {
                     deposit()
                     break;
                 case 'Sacar':
-                    console.log('')
+                    widthDraw()
                     break;
                 case 'Sair':
                     console.log(chalck.bgBlue.black('Obrigado por usar o accounts'))
@@ -188,4 +188,70 @@ function getAccountBalance() {
 
         })
         .catch((err) => console.log(err))
+}
+
+//sacar dinheiro
+function widthDraw() {
+
+    inquirer.prompt([
+        {
+            name: 'accountName',
+            message: 'Qual o nome da sua conta: '
+        }
+    ])
+        .then((res) => {
+            const accountName = res['accountName']
+
+            if (!checkAccount(accountName)) {
+                return widthDraw()
+            }
+
+            inquirer.prompt([
+                {
+                    name: 'amount',
+                    message: 'Qaunto você deseja sacar? '
+                }
+            ])
+                .then((res) => {
+                    const amount = res['amount']
+
+                    removeAmount(accountName, amount)
+
+
+                })
+                .catch((err) => console.log(err))
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+
+
+}
+
+function removeAmount(accountName, amount) {
+
+    const accountData = getAccount(accountName)
+
+    if (!amount) {
+        console.log(chalck.bgRed.black('Campo está em branco, digite algo valido'))
+        return widthDraw()
+    }
+
+    if (accountData.balance < amount) {
+        console.log(chalck.bgRed.black('Valor indisponivel'))
+        return widthDraw()
+    }
+
+    accountData.balance = parseFloat(accountData.balance) - parseFloat(amount)
+
+    fs.writeFileSync(
+        `accounts/${accountName}.json`,
+        JSON.stringify(accountData),
+        (err) => {
+            console.log(err)
+        }
+    )
+
+    console.log(chalck.green(`Foi realizado um saque de R$ ${amount} na sua conta`))
+    operation()
 }
